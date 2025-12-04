@@ -3,24 +3,68 @@
 ## 项目简介
 在线学员学习与进度跟进平台的后端服务，使用Django 5.0构建。
 
+## ⚠️ 数据库配置变更
+**当前数据库: MariaDB** (已从SQLite迁移完成)
+- 主机: 127.0.0.1:3306
+- 数据库: mentor_db
+- 详情请查看: [MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md)
+
 ## 技术栈
 - Python 3.11
 - Django 5.0
 - Django REST Framework
-- MariaDB/MySQL (生产环境)
-- SQLite (开发环境)
+- **MariaDB** (当前使用)
+- SQLite (已替换)
 
 ## 环境配置
 
-### 1. 创建并激活Conda环境
-```bash
-conda create -n mentor-backend python=3.11 -y
-conda activate mentor-backend
+### 方法一：快速自动设置（推荐）
+
+**直接双击运行批处理脚本**（无需配置PowerShell）：
+
+```
+backend\setup_env.bat
 ```
 
-### 2. 安装依赖
-使用清华源加速安装：
-```bash
+或在命令行中：
+
+```cmd
+cd backend
+setup_env.bat
+```
+
+该脚本会自动完成：
+- ✅ 创建 conda 环境 `seed_backend` (Python 3.11)
+- ✅ 安装所有依赖项
+- ✅ 执行数据库迁移
+
+### 方法二：手动设置
+
+#### 1. 创建并激活Conda环境
+
+```cmd
+:: 使用 environment.yml 创建环境
+d:\miniconda3\Scripts\conda.exe env create -f environment.yml
+
+:: 激活环境
+conda activate seed_backend
+```
+
+或手动创建：
+
+```cmd
+d:\miniconda3\Scripts\conda.exe create -n seed_backend python=3.11 -y
+conda activate seed_backend
+```
+
+#### 2. 安装依赖
+
+```cmd
+pip install -r requirements.txt
+```
+
+如需使用清华源加速：
+```cmd
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
@@ -32,38 +76,66 @@ cp .env.example .env
 
 ### 4. 数据库配置
 
-#### 开发环境（默认使用SQLite）
-无需额外配置，直接运行迁移即可。
+#### 当前配置（MariaDB）✅
+项目已配置使用MariaDB数据库：
+- 主机: 127.0.0.1
+- 端口: 3306
+- 数据库: mentor_db
+- 用户: root
 
-#### 生产环境（使用MariaDB）
-1. 安装并启动MariaDB
-2. 创建数据库：
-```sql
-CREATE DATABASE mentor_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'mentor_user'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON mentor_db.* TO 'mentor_user'@'localhost';
-FLUSH PRIVILEGES;
+数据库已创建并完成迁移。如需重新设置，可以运行：
+```cmd
+python create_db.py
+python manage.py migrate
 ```
-3. 在 `settings.py` 中取消MariaDB配置的注释
-4. 在 `.env` 文件中配置数据库连接信息
 
-### 5. 执行数据库迁移
-```bash
+#### 快速启动
+双击运行 `start_server.bat` 即可启动开发服务器（会自动检查数据库连接）
+
+#### 数据库管理
+- 查看迁移完成报告: [MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md)
+- 查看详细迁移指南: [MARIADB_MIGRATION.md](MARIADB_MIGRATION.md)
+
+### 5. 执行数据库迁移（手动设置时需要）
+
+```cmd
 python manage.py makemigrations
 python manage.py migrate
 ```
 
 ### 6. 创建超级用户
-```bash
+
+```cmd
 python manage.py createsuperuser
 ```
 
 ### 7. 运行开发服务器
-```bash
+
+```cmd
 python manage.py runserver
 ```
 
 访问 http://127.0.0.1:8000/admin 进入管理后台
+
+## 常见问题
+
+### conda 命令未找到
+1. 确保 Miniconda 已正确安装在 `d:\miniconda3`
+2. 或将 `d:\miniconda3\Scripts` 添加到系统 PATH 环境变量
+
+### mysqlclient 安装失败
+在 Windows 上，如果遇到 `mysqlclient` 编译错误：
+1. 使用开发环境的 SQLite（默认配置）
+2. 或安装预编译的 wheel：
+```cmd
+pip install mysqlclient --only-binary :all:
+```
+
+### 端口被占用
+如果 8000 端口被占用，可以指定其他端口：
+```cmd
+python manage.py runserver 8001
+```
 
 ## 项目结构
 ```
