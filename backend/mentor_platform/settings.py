@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',  # 必须在 django.contrib.admin 之前
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -68,7 +69,7 @@ ROOT_URLCONF = 'mentor_platform.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'mentor_platform' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -178,4 +179,124 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+}
+
+# Jazzmin Settings - 美化 Django Admin
+JAZZMIN_SETTINGS = {
+    # 网站标题
+    "site_title": "导师平台管理系统",
+    "site_header": "导师平台",
+    "site_brand": "Mentor Platform",
+    "site_logo": None,  # 可以添加 logo 路径
+    "login_logo": None,
+    "site_logo_classes": "img-circle",
+    "site_icon": None,
+    
+    # 欢迎标语
+    "welcome_sign": "欢迎来到导师平台管理系统",
+    
+    # 版权信息
+    "copyright": "导师平台 © 2025",
+    
+    # 搜索模型
+    "search_model": ["auth.User", "auth.Group"],
+    
+    # 用户头像字段
+    "user_avatar": None,
+    
+    ############
+    # 顶部菜单 #
+    ############
+    "topmenu_links": [
+        {"name": "首页", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "查看网站", "url": "/", "new_window": True},
+        {"model": "auth.User"},
+        {"app": "courses"},
+    ],
+    
+    #############
+    # 用户菜单 #
+    #############
+    "usermenu_links": [
+        {"model": "auth.user"},
+    ],
+    
+    #############
+    # 侧边栏 #
+    #############
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    
+    # 侧边栏图标 - 使用 Font Awesome 图标
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "users.userprofile": "fas fa-user-circle",
+        "courses.course": "fas fa-book",
+        "courses.lesson": "fas fa-book-open",
+        "progress.studentprogress": "fas fa-chart-line",
+        "progress.lessonprogress": "fas fa-tasks",
+    },
+    
+    # 默认图标设置
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    
+    #################
+    # 相关模态框 #
+    #################
+    "related_modal_active": False,
+    
+    #############
+    # UI 调整 #
+    #############
+    "custom_css": None,
+    "custom_js": None,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    
+    ###############
+    # 更改视图 #
+    ###############
+    "changeform_format": "horizontal_tabs",
+    "changeform_format_overrides": {
+        "auth.user": "collapsible",
+        "auth.group": "vertical_tabs"
+    },
+}
+
+# Jazzmin UI Tweaks
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-purple",
+    "accent": "accent-primary",
+    "navbar": "navbar-purple navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-purple",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": False,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "flatly",  # 可选: default, cerulean, cosmo, cyborg, darkly, flatly, journal, litera, lumen, lux, materia, minty, pulse, sandstone, simplex, sketchy, slate, solar, spacelab, superhero, united, yeti
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }
