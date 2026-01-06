@@ -1,0 +1,43 @@
+项目代码结构摘要（生成时间：2026-01-06）
+
+根目录 d:/workspace_flutter/seed
+- backend/              后端服务（FastAPI 等）
+  - main.py             当前后端入口（FastAPI 应用）
+  - mainbak.py          main 备份/历史版本
+  - api/                接口路由与相关逻辑（占位，具体文件待补充）
+  - database/           数据库相关代码（模型、访问层，占位）
+  - models/             领域/数据模型定义（占位）
+  - services/           业务服务层
+    - ChatbotDeepseek.py  对接 DeepSeek / LLM 的聊天服务
+  - 功能说明.md         后端功能说明文档
+
+- web/                  Flutter 前端工程根目录
+  - pubspec.yaml        Flutter 工程配置与依赖
+  - analysis_options.yaml  Dart/Flutter 分析与规则配置
+  - android/            Android 原生工程（自动生成）
+  - ios/                iOS 原生工程（自动生成）
+  - linux/              Linux 桌面端工程（自动生成）
+  - macos/              macOS 桌面端工程（自动生成）
+  - windows/            Windows 桌面端工程（自动生成）
+  - build/              Flutter 构建输出（自动生成）
+  - web/                Flutter Web 前端静态资源（index.html 等）
+  - README.md           Web 子项目说明
+  - lib/                Flutter 应用 Dart 源码
+    - main.dart         应用入口，路由/主题等
+    - mathqa.dart       数学问答页面（聊天 UI + 自定义 LLM Provider）
+    - mathmodeling.dart 数学建模相关页面/功能（根据文件名推断）
+    - html_preview_inner.dart         HTML 预览适配入口
+    - html_preview_inner_mobile.dart  移动端 HTML 预览实现
+    - html_preview_inner_web.dart     Web 端 HTML 预览实现
+    - html_preview_inner_stub.dart    占位/默认 HTML 预览实现
+
+- docs/                 项目文档
+  - 基本架构.md         整体架构说明（后端 + 前端）
+  - 功能说明.md         功能说明（业务层面）
+  - code_structure.txt  当前代码结构摘要（本文件）
+
+- README.md             仓库根级 README（总体说明）
+
+说明：
+- 上述结构仅列出了主要代码与文档目录，以及关键 Dart/Python 源文件。
+- 诸如 .git/、.idea/、.dart_tool/、__pycache__/ 等为工具或运行时自动生成/使用的目录，未逐一展开。
