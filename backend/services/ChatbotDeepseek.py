@@ -39,13 +39,24 @@ def get_last_assistant_reply() -> str | None:
     return None
 
 
-def chat(prompt: str, *, model: str = "qwen3-max", api_key: str | None = None, base_url: str | None = None, system: str | None = None) -> str:
+def chat(
+    prompt: str,
+    *,
+    model: str = "deepseek-chat",
+    api_key: str | None = None,
+    base_url: str | None = None,
+    system: str | None = None,
+) -> str:
     """Send a prompt to the Deepseek chat model and return the assistant's reply.
 
     This is a non-streaming helper that waits for the full answer and then
     returns it as a single string.
     """
     global chat_history
+
+    # 可选 system 提示词：始终放在最前面
+    if system is not None:
+        chat_history.insert(0, {"role": "system", "content": system})
 
     # Append user message to history
     chat_history.append({"role": "user", "content": prompt})
@@ -65,7 +76,14 @@ def chat(prompt: str, *, model: str = "qwen3-max", api_key: str | None = None, b
     return assistant_reply
 
 
-def chat_stream(prompt: str, *, model: str = "deepseek-chat", api_key: str | None = None, base_url: str | None = None, system: str | None = None):
+def chat_stream(
+    prompt: str,
+    *,
+    model: str = "deepseek-chat",
+    api_key: str | None = None,
+    base_url: str | None = None,
+    system: str | None = None,
+):
     """Stream a chat response from the Deepseek model for backend callers.
 
     设计目标：
@@ -133,6 +151,7 @@ if __name__ == "__main__":
 
     可以在控制台观察流式增量输出是否正常。
     """
+
     reset_conversation()
 
     test_prompt = "请用中文简要介绍一下你自己，并分段输出几句话。"

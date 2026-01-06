@@ -24,9 +24,20 @@ async def root():
 async def chat_endpoint(payload: dict):
     """非流式对话接口，返回完整回答。
 
-    请求体示例：{"prompt": "..."
+    请求体示例：
+    {
+        "prompt": "...",
+        "files": [...]  # 目前后端仅接收该字段，不传给 LLM 处理
+    }
+
+    目前仍然只将 prompt 作为纯文本发送给大模型，
+    files 字段先保留作扩展用，但不会参与本轮对话。
     """
+
     prompt = payload.get("prompt", "")
+    # files 字段可以接收但暂不处理，保留接口兼容性
+    _files = payload.get("files") or None
+
     # 根据需要可按会话 ID / 用户 ID 控制 reset_conversation()
     # 这里先简单地复用全局对话历史
     answer = chat(prompt)
@@ -37,11 +48,19 @@ async def chat_endpoint(payload: dict):
 async def chat_stream_endpoint(payload: dict):
     """流式对话接口（POST），使用 SSE 向前端推送内容。
 
-    请求体示例：{"prompt": "..."}
-    前端可以使用 fetch/XHR 建立连接并逐步读取响应流，
-    或者在支持的环境下使用 EventSource polyfill。
+    请求体示例：
+    {
+        "prompt": "...",
+        "files": [...]  # 目前后端仅接收该字段，不传给 LLM 处理
+    }
+
+    当前实现中，大模型只接收纯文本 prompt，
+    files 字段保留作未来扩展，不影响现有调用。
     """
     prompt = payload.get("prompt", "")
+    files = payload.get("files") or None
+    print("User:", prompt)  # 在服务器端打印输出，便于调试观察
+    print("files:", files)
 
     def event_generator():
         """将 ChatbotDeepseek.chat_stream 产生的内容转换为标准 SSE 格式。
@@ -53,6 +72,7 @@ async def chat_stream_endpoint(payload: dict):
         - 事件之间用一个空行分隔（"\n\n"）。
         """
         print("AI:", end=" ")  # 在服务器端打印输出，便于调试观察
+        # 目前仅将 prompt 发送给 LLM，文件内容暂不参与对话
         for piece in chat_stream(prompt):
             if not piece:
                 continue
