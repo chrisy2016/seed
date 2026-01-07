@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_ai_toolkit/flutter_ai_toolkit.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'html_preview_inner.dart';
 import 'package:http/http.dart' as http;
 import 'package:markdown/markdown.dart' as md;
@@ -124,6 +125,8 @@ class _MathModelingPageState extends State<MathModelingPage> {
         // Markdown 正文
         MarkdownBody(
           data: response,
+          inlineSyntaxes: [InlineLatexSyntax(), InlineParenLatexSyntax()],
+          blockSyntaxes: [BlockLatexSyntax()],
           styleSheet: MarkdownStyleSheet(
             p: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
             listBullet:
@@ -139,6 +142,8 @@ class _MathModelingPageState extends State<MathModelingPage> {
           // 仅对 ``` 包围的代码块生效，行内 `code` 不受影响
           builders: {
             'code': CodeBlockBuilder(theme, onRunHtml: _showHtmlPreview),
+            'inline_latex': LatexElementBuilder(isBlock: false),
+            'block_latex': LatexElementBuilder(isBlock: true),
           },
         ),
         const SizedBox(height: 4),
@@ -368,6 +373,117 @@ class BackendLlmProvider extends LlmProvider {
 
   void dispose() {
     _client.close();
+  }
+}
+
+/// 解析 $inline$ 和 $$block$$ LaTeX 语法并交给 flutter_math_fork 渲染。
+class InlineLatexSyntax extends md.InlineSyntax {
+  InlineLatexSyntax() : super(r'\$(?!\$)(.+?)(?<!\$)\$');
+
+  @override
+  bool onMatch(md.InlineParser parser, Match match) {
+    final content = match.group(1);
+    if (content == null) return false;
+    parser.addNode(md.Element.text('inline_latex', content));
+    return true;
+  }
+}
+
+/// 解析 \( ... \) 形式的行内公式。
+class InlineParenLatexSyntax extends md.InlineSyntax {
+  InlineParenLatexSyntax() : super(r'\\\((.+?)\\\)');
+
+  @override
+  bool onMatch(md.InlineParser parser, Match match) {
+    final content = match.group(1);
+    if (content == null) return false;
+    parser.addNode(md.Element.text('inline_latex', content));
+    return true;
+  }
+}
+
+class BlockLatexSyntax extends md.BlockSyntax {
+  BlockLatexSyntax();
+
+  @override
+  RegExp get pattern => _startLine;
+
+  static final RegExp _startLine = RegExp(r'^\s*(\$\$|\\\[)\s*$');
+  static final RegExp _endDollar = RegExp(r'^\s*\$\$\s*$');
+  static final RegExp _endBracket = RegExp(r'^\s*\\\]\s*$');
+  static final RegExp _singleDollar = RegExp(r'^\s*\$\$(.+)\$\$\s*$');
+  static final RegExp _singleBracket = RegExp(r'^\s*\\\[(.+)\\\]\s*$');
+
+  @override
+  bool canParse(md.BlockParser parser) {
+    final line = parser.current.content;
+    return _startLine.hasMatch(line) ||
+        _singleDollar.hasMatch(line) ||
+        _singleBracket.hasMatch(line);
+  }
+
+  @override
+  md.Node parse(md.BlockParser parser) {
+    final line = parser.current.content;
+    parser.advance();
+
+    final singleDollar = _singleDollar.firstMatch(line);
+    if (singleDollar != null) {
+      return md.Element.text('block_latex', singleDollar.group(1)!.trim());
+    }
+
+    final singleBracket = _singleBracket.firstMatch(line);
+    if (singleBracket != null) {
+      return md.Element.text('block_latex', singleBracket.group(1)!.trim());
+    }
+
+    final bool isBracket = line.contains('\\[');
+    final endPattern = isBracket ? _endBracket : _endDollar;
+
+    final buffer = StringBuffer();
+    while (!parser.isDone && !endPattern.hasMatch(parser.current.content)) {
+      buffer.writeln(parser.current.content);
+      parser.advance();
+    }
+    if (!parser.isDone) {
+      parser.advance(); // 跳过结尾行
+    }
+
+    return md.Element.text('block_latex', buffer.toString().trim());
+  }
+}
+
+class LatexElementBuilder extends MarkdownElementBuilder {
+  LatexElementBuilder({required this.isBlock});
+
+  final bool isBlock;
+
+  @override
+  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+    final mathSource = element.textContent.trim();
+    if (mathSource.isEmpty) return null;
+
+    final textStyle = (preferredStyle ?? const TextStyle()).copyWith(
+      color: Colors.white,
+    );
+
+    final mathWidget = Math.tex(
+      mathSource,
+      textStyle: textStyle,
+      onErrorFallback: (FlutterMathException e) => Text(
+        mathSource,
+        style: textStyle.copyWith(color: Colors.redAccent),
+      ),
+    );
+
+    if (isBlock) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: mathWidget,
+      );
+    }
+
+    return mathWidget;
   }
 }
 

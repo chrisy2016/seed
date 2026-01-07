@@ -40,6 +40,7 @@ dependencies:
   flutter_ai_toolkit: ^1.0.0
   webview_flutter: ^4.0.0
   webview_flutter_web: ^0.2.2+4
+  flutter_math_fork: ^0.7.2
 
 dev_dependencies:
   flutter_test:
